@@ -26,7 +26,12 @@ if uploaded_file:
         st.subheader("Raw Data Preview")
         st.dataframe(df.head(50))
 
-        # Convert all numeric columns
+        # Identify date column
+        date_column = st.selectbox("Select the datetime column for time-based analysis", df.columns)
+        df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
+        df = df.dropna(subset=[date_column])
+
+        # Convert numeric columns
         for col in df.select_dtypes(include='object').columns:
             df[col] = pd.to_numeric(df[col], errors='ignore')
 
@@ -46,10 +51,12 @@ if uploaded_file:
         sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
         st.pyplot(fig)
 
-        st.subheader("📉 Line Graph: Overlapping Variables")
-        selected_lines = st.multiselect("Select multiple variables to overlay on a line chart", numeric_columns, default=numeric_columns[:2])
+        st.subheader("📉 Line Graph: Overlapping Variables Over Time")
+        selected_lines = st.multiselect("Select variables to plot over time", numeric_columns, default=numeric_columns[:2])
         if len(selected_lines) > 1:
-            st.line_chart(df[selected_lines].dropna())
+            time_plot_df = df[[date_column] + selected_lines].dropna()
+            time_plot_df = time_plot_df.set_index(date_column).sort_index()
+            st.line_chart(time_plot_df)
 
         st.subheader("📊 Summary Statistics")
         st.write(df[[x_var, y_var]].describe())
