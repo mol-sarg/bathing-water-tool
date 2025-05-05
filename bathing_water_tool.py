@@ -30,13 +30,6 @@ if uploaded_file:
         for col in df.select_dtypes(include='object').columns:
             df[col] = pd.to_numeric(df[col], errors='ignore')
 
-        # Select site column and filter
-        site_column = st.selectbox("Select the site column (if available)", [col for col in df.columns if df[col].dtype == object])
-        selected_site = st.selectbox("Choose a site to explore", df[site_column].dropna().unique())
-        filtered_df = df[df[site_column] == selected_site].copy()
-
-        st.write(f"Filtered data contains **{len(filtered_df)}** rows.")
-
         numeric_columns = filtered_df.select_dtypes(include='number').columns.tolist()
         x_var = st.selectbox("Select X-axis variable", numeric_columns)
         y_var = st.selectbox("Select Y-axis variable", numeric_columns, index=1 if len(numeric_columns) > 1 else 0)
